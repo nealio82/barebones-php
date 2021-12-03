@@ -1,0 +1,17 @@
+version: "3"
+
+networks:
+  lendable-code-kata_php:
+
+services:
+  lendable-code-kata_php_service:
+    build:
+      context: .
+      dockerfile: ./docker/php/Dockerfile
+    container_name: lendable-code-kata_php_container
+    ports:
+      - "9000:9000"
+    volumes:
+      - .:/var/www/project
+    networks:
+      - lendable-code-kata_php
