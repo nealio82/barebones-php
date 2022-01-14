@@ -1,0 +1,15 @@
+{
+    "name": "root/project",
+    "type": "library",
+    "autoload": {
+        "psr-4": {
+            "ElevatorKata\\": "src/"
+        }
+    },
+    "require-dev": {
+        "pestphp/pest": "^1.21"
+    },
+    "require": {
+        "phpunit/phpunit": "^9.5"
+    }
+}
