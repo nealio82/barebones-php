@@ -4,22 +4,11 @@ namespace ElevatorKata;
 
 class Lift
 {
-    private bool $doorsAreOpen = false;
+    private int $currentFloor;
 
-    private int $currentFloor = 1;
-
-    public function __construct()
+    public function __construct(int $currentFloor = 1)
     {
-    }
-
-    public function openDoors(): void
-    {
-        $this->doorsAreOpen = true;
-    }
-
-    public function doorsAreOpen(): bool
-    {
-        return $this->doorsAreOpen;
+        $this->currentFloor = $currentFloor;
     }
 
     public function currentFloor(): int
