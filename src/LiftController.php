@@ -14,6 +14,8 @@ class LiftController
      */
     private array $recordedEvents;
 
+    private array $calls = [];
+
     public function __construct(Lift $lift)
     {
         $this->lift = $lift;
@@ -24,7 +26,17 @@ class LiftController
         $this->callingFloor = $callingFloor;
         $this->desiredDirection = $direction;
 
-        $this->recordEventsForMovingToFloor($callingFloor, $this->lift->currentFloor());
+        $this->calls[$callingFloor] = $direction;
+    }
+
+    public function run(): void
+    {
+        ksort($this->calls);
+
+        foreach ($this->calls as $floor => $direction) {
+            $this->recordEventsForMovingToFloor($floor, $this->lift->currentFloor());
+        }
+
     }
 
     public function acknowledgedCall(): bool
@@ -61,8 +73,21 @@ class LiftController
 
         $absoluteNumberOfFloorsToMove = abs($numberOfFloorsToMove);
 
+        $this->recordedEvents[] = 'doors closed';
+
         for ($i = 0; $i < $absoluteNumberOfFloorsToMove; $i++) {
-            $this->recordedEvents[] = 'lift moved ' . $movingDirection;
+
+            $this->recordedEvents = array_merge(
+                $this->recordedEvents,
+                \iterator_to_array($this->lift->moveUp())
+            );
+
+
+            if (array_key_exists($currentFloor + $i, $this->calls) && $this->calls[$currentFloor + $i] === DesiredDirection::UP) {
+                $this->lift->openDoors();
+                $this->lift->closeDoors();
+                unset($this->calls[$currentFloor + $i]);
+            }
         }
 
         $this->recordedEvents[] = 'doors open';

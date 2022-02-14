@@ -182,6 +182,7 @@ test('lift closes doors and moves down to multiple requested floors', function (
 //* an elevator delivers passengers to requested floors
 //* an elevator doesn't respond immediately. consider options to simulate time
 //* elevator calls are queued not necessarily FIFO
+//  - assert which direction to go in first
 //* you may validate passenger floor requests
 //* you may implement current floor monitor
 //* you may implement direction arrows
