@@ -7,10 +7,9 @@
         }
     },
     "require-dev": {
-        "pestphp/pest": "^1.21"
+        "phpunit/phpunit": "^9.5"
     },
     "require": {
-        "phpunit/phpunit": "^9.5",
         "symfony/console": "5.4"
     },
     "config": {

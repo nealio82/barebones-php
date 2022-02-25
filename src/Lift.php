@@ -6,11 +6,12 @@ class Lift
 {
     private int $currentFloor;
 
-    private string $doorsState;
+    private bool $doorsOpen;
 
-    public function __construct(int $currentFloor = 1)
+    public function __construct(int $currentFloor = 1, bool $doorsOpen = true)
     {
         $this->currentFloor = $currentFloor;
+        $this->doorsOpen = $doorsOpen;
     }
 
     public function currentFloor(): int
@@ -18,27 +19,41 @@ class Lift
         return $this->currentFloor;
     }
 
+    public function areDoorsOpen(): bool
+    {
+        return $this->doorsOpen;
+    }
+
     public function moveUp(): \Traversable
     {
-        // @todo: make doors closed an invariant on this
+        if ($this->doorsOpen) {
+            yield from $this->closeDoors();
+        }
+
         $this->currentFloor++;
 
         yield 'lift moved up';
     }
 
-    public function openDoors(): string
+    public function openDoors(): \Traversable
     {
-        // @todo ignore if doors already open
-        $this->doorsState = 'open';
+        if ($this->doorsOpen) {
+            return;
+        }
 
-        return 'Doors open';
+        $this->doorsOpen = true;
+
+        yield 'doors open';
     }
 
-    public function closeDoors(): string
+    public function closeDoors(): \Traversable
     {
-        // @todo ignore if doors already closed
-        $this->doorsState = 'closed';
+        if ($this->doorsOpen === false) {
+            return;
+        }
 
-        return 'Doors closed';
+        $this->doorsOpen = false;
+
+        yield 'doors closed';
     }
 }

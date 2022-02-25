@@ -6,13 +6,7 @@ namespace ElevatorKata;
 
 class LiftController
 {
-    private int $callingFloor;
-    private DesiredDirection $desiredDirection;
     private Lift $lift;
-    /**
-     * @var string[]
-     */
-    private array $recordedEvents;
 
     private array $calls = [];
 
@@ -23,87 +17,34 @@ class LiftController
 
     public function receiveCall(int $callingFloor, DesiredDirection $direction): void
     {
-        $this->callingFloor = $callingFloor;
-        $this->desiredDirection = $direction;
-
         $this->calls[$callingFloor] = $direction;
     }
 
-    public function run(): void
+    public function tick(): string
     {
         ksort($this->calls);
-
         foreach ($this->calls as $floor => $direction) {
-            $this->recordEventsForMovingToFloor($floor, $this->lift->currentFloor());
+            return $this->recordEventsForMovingToFloor($floor, $this->lift->currentFloor())->current() ?? '';
         }
-
     }
 
-    public function acknowledgedCall(): bool
-    {
-        return true;
-    }
-
-    public function callingFloor(): int
-    {
-        return $this->callingFloor;
-    }
-
-    public function desiredDirection(): DesiredDirection
-    {
-        return $this->desiredDirection;
-    }
-
-    public function getRecordedEvents(): array
-    {
-        return $this->recordedEvents;
-    }
-
-    public function moveToFloor(int $desiredFloor): void
-    {
-        $this->recordedEvents[] = 'doors closed';
-
-        $this->recordEventsForMovingToFloor($desiredFloor, $this->lift->currentFloor());
-    }
-
-    private function recordEventsForMovingToFloor(int $desiredFloor, int $currentFloor): void
+    private function recordEventsForMovingToFloor(int $desiredFloor, int $currentFloor): \Generator
     {
         $numberOfFloorsToMove = $desiredFloor - $currentFloor;
-        $movingDirection = $numberOfFloorsToMove < 0 ? 'down' : 'up';
 
         $absoluteNumberOfFloorsToMove = abs($numberOfFloorsToMove);
 
-        $this->recordedEvents[] = 'doors closed';
-
         for ($i = 0; $i < $absoluteNumberOfFloorsToMove; $i++) {
-
-            $this->recordedEvents = array_merge(
-                $this->recordedEvents,
-                \iterator_to_array($this->lift->moveUp())
-            );
-
-
-            if (array_key_exists($currentFloor + $i, $this->calls) && $this->calls[$currentFloor + $i] === DesiredDirection::UP) {
-                $this->lift->openDoors();
-                $this->lift->closeDoors();
-                unset($this->calls[$currentFloor + $i]);
-            }
+            yield from $this->lift->moveUp();
         }
 
-        $this->recordedEvents[] = 'doors open';
-    }
-
-    /**
-     * @param int[] $requestFloors
-     */
-    public function moveToMultipleFloors(array $requestFloors): void
-    {
-        $previousFloor = $this->lift->currentFloor();
-
-        foreach ($requestFloors as $requestFloor) {
-            $this->recordedEvents[] = 'doors closed';
-            $this->recordEventsForMovingToFloor($requestFloor, $previousFloor);
-            $previousFloor = $requestFloor;
+        if (array_key_exists($this->lift->currentFloor(), $this->calls)) {
+            unset($this->calls[$this->lift->currentFloor()]);
+            yield from $this->lift->openDoors();
         }
+
+        // todo: change function name
+        // todo: implement moving down
+        // todo: implement passenger inside the elevator clicking the floor they want to go
     }
 }
