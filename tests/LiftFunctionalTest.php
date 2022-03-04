@@ -15,7 +15,7 @@ class LiftFunctionalTest extends \PHPUnit\Framework\TestCase
 
         $liftController = new LiftController($lift);
 
-        $liftController->receiveCall($personStartingFloor, DesiredDirection::UP);
+        $liftController->receiveCallFromOutside($personStartingFloor, DesiredDirection::UP);
 
         $expectedEvents = [
             'doors closed',
@@ -41,8 +41,8 @@ class LiftFunctionalTest extends \PHPUnit\Framework\TestCase
 
         $liftController = new LiftController($lift);
 
-        $liftController->receiveCall($person1StartingFloor, DesiredDirection::UP);
-        $liftController->receiveCall($person2StartingFloor, DesiredDirection::UP);
+        $liftController->receiveCallFromOutside($person1StartingFloor, DesiredDirection::UP);
+        $liftController->receiveCallFromOutside($person2StartingFloor, DesiredDirection::UP);
 
         $expectedEvents = [
             'doors closed',
@@ -72,8 +72,8 @@ class LiftFunctionalTest extends \PHPUnit\Framework\TestCase
 
         $liftController = new LiftController($lift);
 
-        $liftController->receiveCall($person1StartingFloor, DesiredDirection::UP);
-        $liftController->receiveCall($person2StartingFloor, DesiredDirection::UP);
+        $liftController->receiveCallFromOutside($person1StartingFloor, DesiredDirection::UP);
+        $liftController->receiveCallFromOutside($person2StartingFloor, DesiredDirection::UP);
 
         $expectedEvents = [
             'doors closed',
@@ -92,4 +92,64 @@ class LiftFunctionalTest extends \PHPUnit\Framework\TestCase
 
         $this->assertSame($expectedEvents, $actualEvents);
     }
+
+    public function test_lift_moves_down(): void
+    {
+        $elevatorStartingFloor = 10;
+        $personStartingFloor = 9;
+
+        $lift = new Lift($elevatorStartingFloor, false);
+
+        $liftController = new LiftController($lift);
+
+        $liftController->receiveCallFromOutside($personStartingFloor, DesiredDirection::UP);
+
+        $expectedEvents = [
+            'lift moved down', // 10th to 9th floor
+            'doors open', // pick up person 1
+        ];
+
+        for ($i = 0; $i < count($expectedEvents); ++$i) {
+            $actualEvents[] = $liftController->tick();
+        }
+
+        $this->assertSame($expectedEvents, $actualEvents);
+    }
+
+    public function test_customer_can_choose_a_destination_floor(): void
+    {
+        $elevatorStartingFloor = 10;
+
+        $lift = new Lift($elevatorStartingFloor, true);
+
+        $liftController = new LiftController($lift);
+
+        $liftController->pressFloorButton(9);
+
+        $expectedEvents = [
+            'doors closed',
+            'lift moved down',
+            'doors open',
+        ];
+
+        for ($i = 0; $i < count($expectedEvents); ++$i) {
+            $actualEvents[] = $liftController->tick();
+        }
+
+        $this->assertSame($expectedEvents, $actualEvents);
+    }
+
+    // @todo next week: test this experience:
+        // customer is outside the lift
+        // lift is closed on same floor
+        // the customer requests lift
+        // doors open
+        // customer requests floor
+        // lift moves
+        // doors open
+
+
+    // todo: lift is above the customer and customer selects a floor (10th - 1st, someone on 5th calls lift to go up/down...)
+    // todo: lift is below the customer and customer selects a floor
+    // todo: lift is on its way down, customer presses down so lift stops but presses higher floor, lift ignores press and continues down
 }

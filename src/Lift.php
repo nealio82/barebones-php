@@ -56,4 +56,15 @@ class Lift
 
         yield 'doors closed';
     }
+
+    public function moveDown(): \Traversable
+    {
+        if ($this->doorsOpen) {
+            yield from $this->closeDoors();
+        }
+
+        $this->currentFloor--;
+
+        yield 'lift moved down';
+    }
 }
