@@ -9,7 +9,6 @@ class LiftController
     private Lift $lift;
 
     private array $calls = [];
-    private array $desiredFloors = [];
 
     public function __construct(Lift $lift)
     {
@@ -23,7 +22,6 @@ class LiftController
 
     public function pressFloorButton(int $desiredFloor): void
     {
-        // @todo: refactor so we don't need an arbitrary direction
         $this->calls[$desiredFloor] = DesiredDirection::UP;
     }
 
@@ -39,6 +37,11 @@ class LiftController
     private function calculateRequiredActions(int $desiredFloor, int $currentFloor): \Generator
     {
         $numberOfFloorsToMove = $desiredFloor - $currentFloor;
+
+        if (isset($this->calls[$currentFloor])) {
+            unset($this->calls[$currentFloor]);
+            yield from $this->lift->openDoors();
+        }
 
         if ($numberOfFloorsToMove > 0) {
             for ($i = 0; $i < $numberOfFloorsToMove; $i++) {
@@ -57,9 +60,5 @@ class LiftController
             unset($this->calls[$this->lift->currentFloor()]);
             yield from $this->lift->openDoors();
         }
-
-        // todo: implement passenger inside the elevator clicking the floor they want to go
-        // todo: cannot go up above max floors
-        // todo: cannot go down below min floors
     }
 }
